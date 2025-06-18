@@ -2,8 +2,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <EEPROM.h>
-#include <QTRSensors.h>
+// #include <EEPROM.h>
+// #include <QTRSensors.h>
 
 // display
 #define screen_width 128
@@ -47,3 +47,23 @@ int maxDist = screen_width / 2;  // Max distance the lines can move from the cen
 
 // servo
 #define servo 12
+
+void setup() {
+  Serial.begin(115200);
+  display.begin(SSD1306_SWITCHCAPVCC, screen_address);
+  display.setTextColor(SSD1306_WHITE);
+}
+
+void v_print(String message, int font_size = 2) {
+  display.clearDisplay();
+  display.setTextSize(font_size);
+  display.setCursor(0, 0);
+  display.println(message);
+  display.display();
+}
+
+void loop(){
+  v_print("testing display");
+
+}
+
