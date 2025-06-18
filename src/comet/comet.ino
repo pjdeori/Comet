@@ -7,6 +7,7 @@ void setup() {
   Serial.begin(115200);
   setup_display();
   setup_pins();
+  setup_qtr();
 }
 
 void loop() {
