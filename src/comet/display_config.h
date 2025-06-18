@@ -1,5 +1,4 @@
-#ifndef DISPLAY_CONFIG_H
-#define DISPLAY_CONFIG_H
+#pragma once
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -13,7 +12,14 @@
 
 extern Adafruit_SSD1306 display;
 
-void init_display();
+void setup_display();
 void v_print(String message, int font_size = 2);
-
-#endif
+void test_display();
+void testdrawrect();
+void testfillrect();
+void testdrawcircle();
+void testfillcircle();
+void testdrawroundrect();
+void testfillroundrect();
+void testdrawchar();
+void testdrawstyles();

@@ -1,7 +1,7 @@
 // Button pins
-#define b0 23
-#define b1 25
-#define b2 29
+#define b0 23 // select
+#define b1 25 // down or -
+#define b2 29 // up or +
 #define b3 31
 #define b4 30
 
