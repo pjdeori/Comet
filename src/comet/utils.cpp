@@ -3,43 +3,14 @@
 #include "pin_config.h"
 #include "utils.h"
 
-// setups ===================================================================
-Adafruit_SSD1306 display(screen_width, screen_height, &Wire, oled_reset);
-
-void setup_display() {
-  if (!display.begin(SSD1306_SWITCHCAPVCC, screen_address)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    while (true)
-      ;  // Infinite loop to halt
-  }
-
-  display.setTextColor(SSD1306_WHITE);
-  display.clearDisplay();
-  display.display();
-}
-
-void setup_pins() {
-  pinMode(b0, INPUT_PULLUP);
-  pinMode(b1, INPUT_PULLUP);
-  pinMode(b2, INPUT_PULLUP);
-  pinMode(b3, INPUT_PULLUP);
-  pinMode(b4, INPUT_PULLUP);
-}
-
-QTRSensors qtr;
-const uint8_t sensor_pins[] = { A15, A13, A11, A9, A7, A5, A3, A1 };
-
-void setup_qtr() {
-  qtr.setTypeAnalog();
-  qtr.setSensorPins(sensor_pins, 8);
-}
-
-// utility ===================================================================
-
-const String menu_options[] = { "Calibrate", "Read", "Line", "Test Display", "Test Button" };
 String line_type = "Black";
+String message;
+
+// Menu setup
+const String menu_options[] = { "Calibrate", "Read", "Line", "Test Display", "Test Button" };
 int menu_option_len = sizeof(menu_options) / sizeof(menu_options[0]);
 int menu_counter = 0;
+
 void menu_handle() {
   // print current selection
 
@@ -75,35 +46,15 @@ void option_handle() {
     toggle_line();
   }
 }
-String message;
+
+// Sensor setup
+QTRSensors qtr;
+const uint8_t sensor_pins[] = { A15, A13, A11, A9, A7, A5, A3, A1 };
 unsigned int sensorValues[8];
-void read() {
 
-  while (1) {
-    // read calibrated sensor values and obtain a measure of the line position
-    // from 0 to 5000 (for a white line, use readLineWhite() instead)
-
-    uint16_t position = qtr.readLineBlack(sensorValues);
-    message = "";
-    // print the sensor values as numbers from 0 to 1000, where 0 means maximum
-    // reflectance and 1000 means minimum reflectance, followed by the line
-    // position
-    for (uint8_t i = 0; i < 8; i++) {
-      message = message + " " + String(sensorValues[i]);
-    }
-    message = message + "\n" + position;
-    v_print(message, 1);
-
-    unsigned long startTime = millis();
-    while (digitalRead(b2) == LOW) {
-      if (millis() - startTime >= 500) {
-        v_print("release to go back", 1);
-        if (digitalRead(b2) == HIGH) {
-          return;
-        }
-      }
-    }
-  }
+void setup_qtr() {
+  qtr.setTypeAnalog();
+  qtr.setSensorPins(sensor_pins, 8);
 }
 
 void calibrate() {
@@ -117,8 +68,6 @@ void calibrate() {
     message = message + " " + String(qtr.calibrationOn.minimum[i]);
   }
   v_print(message, 1);
-
-
   delay(1500);
 
   message = "Maximum\n";
@@ -126,8 +75,36 @@ void calibrate() {
     message = message + " " + String(qtr.calibrationOn.maximum[i]);
   }
   v_print(message, 1);
-
   delay(1500);
+}
+
+void read() {
+  while (1) {
+    // read sensor values and obtain a measure of the line position
+    uint16_t position = qtr.readLineBlack(sensorValues); // from 0 to 5000
+
+    // print the sensor values as numbers from 0 to 1000
+    message = "";
+    for (uint8_t i = 0; i < 8; i++) {
+      // where 0 means maximum reflectance and 1000 means minimum reflectance,
+      message = message + " " + String(sensorValues[i]);
+    }
+    // followed by the line position
+    message = message + "\n" + position;
+
+    v_print(message, 1);
+
+    // back traverse check
+    unsigned long startTime = millis();
+    while (digitalRead(b2) == LOW) {
+      if (millis() - startTime >= 500) {
+        v_print("release to go back", 1);
+        if (digitalRead(b2) == HIGH) {
+          return;
+        }
+      }
+    }
+  }
 }
 
 void toggle_line() {
@@ -138,16 +115,13 @@ void toggle_line() {
   }
 }
 
-void go_back_handle() {
-  unsigned long startTime = millis();
-  while (digitalRead(b2) == LOW) {
-    if (millis() - startTime >= 500) {
-      v_print("release to go back", 1);
-      if (digitalRead(b2) == HIGH) {
-        return;
-      }
-    }
-  }
+// Button setup
+void setup_pins() {
+  pinMode(b0, INPUT_PULLUP);
+  pinMode(b1, INPUT_PULLUP);
+  pinMode(b2, INPUT_PULLUP);
+  pinMode(b3, INPUT_PULLUP);
+  pinMode(b4, INPUT_PULLUP);
 }
 
 void test_buttons() {
@@ -165,30 +139,24 @@ void test_buttons() {
         }
       }
     }
-
-
     if (digitalRead(b3) == LOW) v_print("b3 is pressed");
     if (digitalRead(b4) == LOW) v_print("b4 is pressed");
   }
 }
 
-void test_display() {
+// Display setup
+Adafruit_SSD1306 display(screen_width, screen_height, &Wire, oled_reset);
 
-  testdrawrect();  // Draw rectangles (outlines)
+void setup_display() {
+  if (!display.begin(SSD1306_SWITCHCAPVCC, screen_address)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    while (true)
+      ;  // Infinite loop to halt
+  }
 
-  testfillrect();  // Draw rectangles (filled)
-
-  testdrawcircle();  // Draw circles (outlines)
-
-  testfillcircle();  // Draw circles (filled)
-
-  testdrawroundrect();  // Draw rounded rectangles (outlines)
-
-  testfillroundrect();  // Draw rounded rectangles (filled)
-
-  testdrawchar();  // Draw characters of the default font
-
-  testdrawstyles();  // Draw 'stylized' characters
+  display.setTextColor(SSD1306_WHITE);
+  display.clearDisplay();
+  display.display();
 }
 
 void v_print(String message, int font_size) {
@@ -199,10 +167,19 @@ void v_print(String message, int font_size) {
   display.display();
 }
 
+void test_display() {
+  testdrawrect();  // Draw rectangles (outlines)
+  testfillrect();  // Draw rectangles (filled)
+  testdrawcircle();  // Draw circles (outlines)
+  testfillcircle();  // Draw circles (filled)
+  testdrawroundrect();  // Draw rounded rectangles (outlines)
+  testfillroundrect();  // Draw rounded rectangles (filled)
+  testdrawchar();  // Draw characters of the default font
+  testdrawstyles();  // Draw 'stylized' characters
+}
 
 void testdrawrect(void) {
   display.clearDisplay();
-
   for (int16_t i = 0; i < display.height() / 2; i += 2) {
     display.drawRect(i, i, display.width() - 2 * i, display.height() - 2 * i, SSD1306_WHITE);
     display.display();  // Update screen with each newly-drawn rectangle
@@ -212,7 +189,6 @@ void testdrawrect(void) {
 
 void testfillrect(void) {
   display.clearDisplay();
-
   for (int16_t i = 0; i < display.height() / 2; i += 3) {
     // The INVERSE color is used so rectangles alternate white/black
     display.fillRect(i, i, display.width() - i * 2, display.height() - i * 2, SSD1306_INVERSE);
@@ -223,7 +199,6 @@ void testfillrect(void) {
 
 void testdrawcircle(void) {
   display.clearDisplay();
-
   for (int16_t i = 0; i < max(display.width(), display.height()) / 2; i += 2) {
     display.drawCircle(display.width() / 2, display.height() / 2, i, SSD1306_WHITE);
     display.display();
@@ -233,7 +208,6 @@ void testdrawcircle(void) {
 
 void testfillcircle(void) {
   display.clearDisplay();
-
   for (int16_t i = max(display.width(), display.height()) / 2; i > 0; i -= 3) {
     // The INVERSE color is used so circles alternate white/black
     display.fillCircle(display.width() / 2, display.height() / 2, i, SSD1306_INVERSE);
@@ -244,10 +218,8 @@ void testfillcircle(void) {
 
 void testdrawroundrect(void) {
   display.clearDisplay();
-
   for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
-    display.drawRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i,
-                          display.height() / 4, SSD1306_WHITE);
+    display.drawRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i, display.height() / 4, SSD1306_WHITE);
     display.display();
     delay(1);
   }
@@ -255,7 +227,6 @@ void testdrawroundrect(void) {
 
 void testfillroundrect(void) {
   display.clearDisplay();
-
   for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
     // The INVERSE color is used so round-rects alternate white/black
     display.fillRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i,
@@ -267,7 +238,6 @@ void testfillroundrect(void) {
 
 void testdrawchar(void) {
   display.clearDisplay();
-
   display.setTextSize(1);               // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);  // Draw white text
   display.setCursor(0, 0);              // Start at top-left corner
@@ -279,25 +249,29 @@ void testdrawchar(void) {
     if (i == '\n') display.write(' ');
     else display.write(i);
   }
-
   display.display();
 }
 
 void testdrawstyles(void) {
   display.clearDisplay();
-
   display.setTextSize(1);               // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);  // Draw white text
   display.setCursor(0, 0);              // Start at top-left corner
   display.println(F("Hello, world!"));
-
   display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);  // Draw 'inverse' text
   display.println(3.141592);
-
   display.setTextSize(2);  // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
   display.print(F("0x"));
   display.println(0xDEADBEEF, HEX);
-
   display.display();
 }
+
+
+
+
+
+
+
+
+
