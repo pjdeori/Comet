@@ -14,8 +14,8 @@ int menu_counter = 0;
 void menu_handle() {
   // print current selection
 
-  if (menu_options[menu_counter] == "Line:") {
-    v_print(menu_options[menu_counter] + "\n" + line_type, 2);
+  if (menu_options[menu_counter] == "Line") {
+    v_print(menu_options[menu_counter] + ":\n" + line_type, 2);
   } else {
     v_print(menu_options[menu_counter], 2);
   }
@@ -80,8 +80,16 @@ void calibrate() {
 
 void read() {
   while (1) {
-    // read sensor values and obtain a measure of the line position
-    uint16_t position = qtr.readLineBlack(sensorValues); // from 0 to 5000
+    uint16_t position;
+    if (line_type[0] == "B") {
+      // read sensor values and obtain a measure of the line position
+      position = qtr.readLineBlack(sensorValues);  // from 0 to 5000
+    }
+
+    else {
+      // read sensor values and obtain a measure of the line position
+      position = qtr.readLineWhite(sensorValues);  // from 0 to 5000
+    }
 
     // print the sensor values as numbers from 0 to 1000
     message = "";
@@ -168,14 +176,14 @@ void v_print(String message, int font_size) {
 }
 
 void test_display() {
-  testdrawrect();  // Draw rectangles (outlines)
-  testfillrect();  // Draw rectangles (filled)
-  testdrawcircle();  // Draw circles (outlines)
-  testfillcircle();  // Draw circles (filled)
+  testdrawrect();       // Draw rectangles (outlines)
+  testfillrect();       // Draw rectangles (filled)
+  testdrawcircle();     // Draw circles (outlines)
+  testfillcircle();     // Draw circles (filled)
   testdrawroundrect();  // Draw rounded rectangles (outlines)
   testfillroundrect();  // Draw rounded rectangles (filled)
-  testdrawchar();  // Draw characters of the default font
-  testdrawstyles();  // Draw 'stylized' characters
+  testdrawchar();       // Draw characters of the default font
+  testdrawstyles();     // Draw 'stylized' characters
 }
 
 void testdrawrect(void) {
@@ -266,12 +274,3 @@ void testdrawstyles(void) {
   display.println(0xDEADBEEF, HEX);
   display.display();
 }
-
-
-
-
-
-
-
-
-
