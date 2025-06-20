@@ -8,6 +8,7 @@ void setup() {
   setup_display();
   setup_pins();
   setup_qtr();
+  motor_pin_setup();
 }
 
 void loop() {

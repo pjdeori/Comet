@@ -7,7 +7,7 @@ String line_type = "Black";
 String message;
 
 // Menu setup
-const String menu_options[] = { "Calibrate", "Read", "Line", "Test Display", "Test Button" };
+const String menu_options[] = { "Calibrate", "Read", "Line", "Test Display", "Test Button", "Test Motor" };
 int menu_option_len = sizeof(menu_options) / sizeof(menu_options[0]);
 int menu_counter = 0;
 
@@ -44,7 +44,128 @@ void option_handle() {
     read();
   } else if (menu_options[menu_counter] == "Line") {
     toggle_line();
+  }else if (menu_options[menu_counter] == "Test Motor") {
+    test_motor();
   }
+}
+
+// Motor
+void motor_pin_setup() {
+  // === Left TB6612FNG Setup ===
+  pinMode(pwma, OUTPUT);
+  pinMode(ain1, OUTPUT);
+  pinMode(ain2, OUTPUT);
+  pinMode(pwmb, OUTPUT);
+  pinMode(bin1, OUTPUT);
+  pinMode(bin2, OUTPUT);
+
+  // === Right TB6612FNG Setup ===
+  pinMode(pwmc, OUTPUT);
+  pinMode(ain3, OUTPUT);
+  pinMode(ain4, OUTPUT);
+  pinMode(pwmd, OUTPUT);
+  pinMode(bin3, OUTPUT);
+  pinMode(bin4, OUTPUT);
+
+  // === Left TB6612FNG Write LOW ===
+  digitalWrite(pwma, LOW);
+  digitalWrite(ain1, LOW);
+  digitalWrite(ain2, LOW);
+  digitalWrite(pwmb, LOW);
+  digitalWrite(bin1, LOW);
+  digitalWrite(bin2, LOW);
+
+  // === Right TB6612FNG Write LOW ===
+  digitalWrite(pwmc, LOW);
+  digitalWrite(ain3, LOW);
+  digitalWrite(ain4, LOW);
+  digitalWrite(pwmd, LOW);
+  digitalWrite(bin3, LOW);
+  digitalWrite(bin4, LOW);
+}
+
+void test_motor() {
+  // === LEFT TB6612FNG TEST ===
+  v_print("Testing LEFT TB6612FNG...", 1);
+
+  // Forward (AIN1 HIGH, AIN2 LOW; BIN1 HIGH, BIN2 LOW)
+  digitalWrite(ain1, HIGH);
+  digitalWrite(ain2, LOW);
+  digitalWrite(bin1, HIGH);
+  digitalWrite(bin2, LOW);
+
+  for (int speed = 0; speed <= 255; speed += 5) {
+    analogWrite(pwma, speed);
+    analogWrite(pwmb, speed);
+    delay(20);
+  }
+
+  delay(500);
+
+  // Stop
+  analogWrite(pwma, 0);
+  analogWrite(pwmb, 0);
+  delay(300);
+
+  // Reverse (AIN1 LOW, AIN2 HIGH; BIN1 LOW, BIN2 HIGH)
+  digitalWrite(ain1, LOW);
+  digitalWrite(ain2, HIGH);
+  digitalWrite(bin1, LOW);
+  digitalWrite(bin2, HIGH);
+
+  for (int speed = 0; speed <= 255; speed += 5) {
+    analogWrite(pwma, speed);
+    analogWrite(pwmb, speed);
+    delay(20);
+  }
+
+  delay(500);
+
+  // Stop
+  analogWrite(pwma, 0);
+  analogWrite(pwmb, 0);
+
+  // === RIGHT TB6612FNG TEST ===
+  v_print("Testing RIGHT TB6612FNG...", 1);
+
+  // Forward (AIN3 HIGH, AIN4 LOW; BIN3 HIGH, BIN4 LOW)
+  digitalWrite(ain3, HIGH);
+  digitalWrite(ain4, LOW);
+  digitalWrite(bin3, HIGH);
+  digitalWrite(bin4, LOW);
+
+  for (int speed = 0; speed <= 255; speed += 5) {
+    analogWrite(pwmc, speed);
+    analogWrite(pwmd, speed);
+    delay(20);
+  }
+
+  delay(500);
+
+  // Stop
+  analogWrite(pwmc, 0);
+  analogWrite(pwmd, 0);
+  delay(300);
+
+  // Reverse (AIN3 LOW, AIN4 HIGH; BIN3 LOW, BIN4 HIGH)
+  digitalWrite(ain3, LOW);
+  digitalWrite(ain4, HIGH);
+  digitalWrite(bin3, LOW);
+  digitalWrite(bin4, HIGH);
+
+  for (int speed = 0; speed <= 255; speed += 5) {
+    analogWrite(pwmc, speed);
+    analogWrite(pwmd, speed);
+    delay(20);
+  }
+
+  delay(500);
+
+  // Stop
+  analogWrite(pwmc, 0);
+  analogWrite(pwmd, 0);
+
+  v_print("Motor test complete.", 1);
 }
 
 // Sensor setup
