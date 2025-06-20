@@ -6,20 +6,24 @@
 #define b4 30
 
 // Left TB6612FNG
-#define pwma 13
-#define ain1 11
-#define ain2 9
-#define pwmb 7
-#define bin1 5
-#define bin2 3
+// left motor
+#define pwma_l 13
+#define ain2_l 11
+#define ain1_l 9
+// right motor
+#define bin2_l 7
+#define bin1_l 5
+#define pwmb_l 3
 
 // Right TB6612FNG
-#define pwmc 10
-#define ain3 22
-#define ain4 8
-#define pwmd 6
-#define bin3 4
-#define bin4 2
+// left motor
+#define pwma_r 10
+#define ain2_r 8
+#define ain1_r 22
+// right motor
+#define bin2_r 2
+#define bin1_r 4
+#define pwmb_r 6
 
 // Sonar
 #define echo 24

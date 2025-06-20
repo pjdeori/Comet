@@ -49,121 +49,118 @@ void option_handle() {
   }
 }
 
-// Motor
 void motor_pin_setup() {
-  // === Left TB6612FNG Setup ===
-  pinMode(pwma, OUTPUT);
-  pinMode(ain1, OUTPUT);
-  pinMode(ain2, OUTPUT);
-  pinMode(pwmb, OUTPUT);
-  pinMode(bin1, OUTPUT);
-  pinMode(bin2, OUTPUT);
+  // === Left TB6612FNG ===
+  // Left motor
+  pinMode(pwma_l, OUTPUT);
+  pinMode(ain1_l, OUTPUT);
+  pinMode(ain2_l, OUTPUT);
 
-  // === Right TB6612FNG Setup ===
-  pinMode(pwmc, OUTPUT);
-  pinMode(ain3, OUTPUT);
-  pinMode(ain4, OUTPUT);
-  pinMode(pwmd, OUTPUT);
-  pinMode(bin3, OUTPUT);
-  pinMode(bin4, OUTPUT);
+  // Right motor
+  pinMode(pwmb_l, OUTPUT);
+  pinMode(bin1_l, OUTPUT);
+  pinMode(bin2_l, OUTPUT);
 
-  // === Left TB6612FNG Write LOW ===
-  digitalWrite(pwma, LOW);
-  digitalWrite(ain1, LOW);
-  digitalWrite(ain2, LOW);
-  digitalWrite(pwmb, LOW);
-  digitalWrite(bin1, LOW);
-  digitalWrite(bin2, LOW);
+  // === Right TB6612FNG ===
+  // Left motor
+  pinMode(pwma_r, OUTPUT);
+  pinMode(ain1_r, OUTPUT);
+  pinMode(ain2_r, OUTPUT);
 
-  // === Right TB6612FNG Write LOW ===
-  digitalWrite(pwmc, LOW);
-  digitalWrite(ain3, LOW);
-  digitalWrite(ain4, LOW);
-  digitalWrite(pwmd, LOW);
-  digitalWrite(bin3, LOW);
-  digitalWrite(bin4, LOW);
+  // Right motor
+  pinMode(pwmb_r, OUTPUT);
+  pinMode(bin1_r, OUTPUT);
+  pinMode(bin2_r, OUTPUT);
+
+  // Set all pins LOW
+  digitalWrite(pwma_l, LOW);
+  digitalWrite(ain1_l, LOW);
+  digitalWrite(ain2_l, LOW);
+  digitalWrite(pwmb_l, LOW);
+  digitalWrite(bin1_l, LOW);
+  digitalWrite(bin2_l, LOW);
+
+  digitalWrite(pwma_r, LOW);
+  digitalWrite(ain1_r, LOW);
+  digitalWrite(ain2_r, LOW);
+  digitalWrite(pwmb_r, LOW);
+  digitalWrite(bin1_r, LOW);
+  digitalWrite(bin2_r, LOW);
 }
+
 
 void test_motor() {
   // === LEFT TB6612FNG TEST ===
   v_print("Testing LEFT TB6612FNG...", 1);
 
-  // Forward (AIN1 HIGH, AIN2 LOW; BIN1 HIGH, BIN2 LOW)
-  digitalWrite(ain1, HIGH);
-  digitalWrite(ain2, LOW);
-  digitalWrite(bin1, HIGH);
-  digitalWrite(bin2, LOW);
+  // Forward
+  digitalWrite(ain1_l, HIGH);
+  digitalWrite(ain2_l, LOW);
+  digitalWrite(bin1_l, HIGH);
+  digitalWrite(bin2_l, LOW);
 
   for (int speed = 0; speed <= 255; speed += 5) {
-    analogWrite(pwma, speed);
-    analogWrite(pwmb, speed);
+    analogWrite(pwma_l, speed);
+    analogWrite(pwmb_l, speed);
     delay(20);
   }
 
   delay(500);
-
-  // Stop
-  analogWrite(pwma, 0);
-  analogWrite(pwmb, 0);
+  analogWrite(pwma_l, 0);
+  analogWrite(pwmb_l, 0);
   delay(300);
 
-  // Reverse (AIN1 LOW, AIN2 HIGH; BIN1 LOW, BIN2 HIGH)
-  digitalWrite(ain1, LOW);
-  digitalWrite(ain2, HIGH);
-  digitalWrite(bin1, LOW);
-  digitalWrite(bin2, HIGH);
+  // Reverse
+  digitalWrite(ain1_l, LOW);
+  digitalWrite(ain2_l, HIGH);
+  digitalWrite(bin1_l, LOW);
+  digitalWrite(bin2_l, HIGH);
 
   for (int speed = 0; speed <= 255; speed += 5) {
-    analogWrite(pwma, speed);
-    analogWrite(pwmb, speed);
+    analogWrite(pwma_l, speed);
+    analogWrite(pwmb_l, speed);
     delay(20);
   }
 
   delay(500);
-
-  // Stop
-  analogWrite(pwma, 0);
-  analogWrite(pwmb, 0);
+  analogWrite(pwma_l, 0);
+  analogWrite(pwmb_l, 0);
 
   // === RIGHT TB6612FNG TEST ===
   v_print("Testing RIGHT TB6612FNG...", 1);
 
-  // Forward (AIN3 HIGH, AIN4 LOW; BIN3 HIGH, BIN4 LOW)
-  digitalWrite(ain3, HIGH);
-  digitalWrite(ain4, LOW);
-  digitalWrite(bin3, HIGH);
-  digitalWrite(bin4, LOW);
+  // Forward
+  digitalWrite(ain1_r, HIGH);
+  digitalWrite(ain2_r, LOW);
+  digitalWrite(bin1_r, HIGH);
+  digitalWrite(bin2_r, LOW);
 
   for (int speed = 0; speed <= 255; speed += 5) {
-    analogWrite(pwmc, speed);
-    analogWrite(pwmd, speed);
+    analogWrite(pwma_r, speed);
+    analogWrite(pwmb_r, speed);
     delay(20);
   }
 
   delay(500);
-
-  // Stop
-  analogWrite(pwmc, 0);
-  analogWrite(pwmd, 0);
+  analogWrite(pwma_r, 0);
+  analogWrite(pwmb_r, 0);
   delay(300);
 
-  // Reverse (AIN3 LOW, AIN4 HIGH; BIN3 LOW, BIN4 HIGH)
-  digitalWrite(ain3, LOW);
-  digitalWrite(ain4, HIGH);
-  digitalWrite(bin3, LOW);
-  digitalWrite(bin4, HIGH);
+  // Reverse
+  digitalWrite(ain1_r, LOW);
+  digitalWrite(ain2_r, HIGH);
+  digitalWrite(bin1_r, LOW);
+  digitalWrite(bin2_r, HIGH);
 
   for (int speed = 0; speed <= 255; speed += 5) {
-    analogWrite(pwmc, speed);
-    analogWrite(pwmd, speed);
+    analogWrite(pwma_r, speed);
+    analogWrite(pwmb_r, speed);
     delay(20);
   }
 
   delay(500);
-
-  // Stop
-  analogWrite(pwmc, 0);
-  analogWrite(pwmd, 0);
+  analogWrite(pwma_r, 0);
+  analogWrite(pwmb_r, 0);
 
   v_print("Motor test complete.", 1);
 }
