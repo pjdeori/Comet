@@ -44,7 +44,7 @@ void option_handle() {
     read();
   } else if (menu_options[menu_counter] == "Line") {
     toggle_line();
-  }else if (menu_options[menu_counter] == "Test Motor") {
+  } else if (menu_options[menu_counter] == "Test Motor") {
     test_motor();
   }
 }
@@ -176,8 +176,29 @@ void setup_qtr() {
 }
 
 void calibrate() {
+  message = "";
+  while (digitalRead(b2) != LOW) {
+    for (uint8_t i = 0; i < 8; ++i) {
+      message = message + " " + String(qtr.calibrationOn.minimum[i]);
+    }
+    v_print("Place on black.\n" + message, 1);
+  }
+
   v_print("Calibrating", 1);
-  for (uint16_t i = 0; i < 400; i++) {
+  for (int i = 0; i < 100 ; ++i) {
+    qtr.calibrate();
+  }
+
+  message = "";
+  while (digitalRead(b2) != LOW) {
+    for (uint8_t i = 0; i < 8; ++i) {
+      message = message + " " + String(qtr.calibrationOn.maximum[i]);
+    }
+    v_print("Place on white.\n" + message, 1);
+  }
+
+  v_print("Calibrating", 1);
+  for (int i = 0; i < 100 ; ++i) {
     qtr.calibrate();
   }
 
@@ -185,6 +206,7 @@ void calibrate() {
   for (uint8_t i = 0; i < 8; ++i) {
     message = message + " " + String(qtr.calibrationOn.minimum[i]);
   }
+
   v_print(message, 1);
   delay(1500);
 
