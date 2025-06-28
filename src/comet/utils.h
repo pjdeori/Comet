@@ -1,5 +1,4 @@
 #pragma once
-
 void setup_display();
 void setup_pins();
 void setup_qtr();

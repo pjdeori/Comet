@@ -148,15 +148,15 @@ void set_max_speed() {
 }
 
 void set_direction(int direction){
-  if (direction==1){
-    // Forward
+  if (direction==-1){
+    // Reverse
     digitalWrite(ain1_l, HIGH);
     digitalWrite(ain2_l, LOW);
     digitalWrite(bin1_l, HIGH);
     digitalWrite(bin2_l, LOW);
   }
-  else if (direction==-1){
-    // Reverse
+  else if (direction==1){
+    // Forward
   digitalWrite(ain1_l, LOW);
   digitalWrite(ain2_l, HIGH);
   digitalWrite(bin1_l, LOW);
@@ -201,8 +201,8 @@ QTRSensors qtr;
 const uint8_t sensor_pins[] = { A15, A13, A11, A9, A7, A5, A3, A1 };
 unsigned int sensor_values[8];
 uint16_t position;
-int min_threshold;
-int max_threshold;
+unsigned int min_threshold;
+unsigned int max_threshold;
 
 void setup_qtr() {
   qtr.setTypeAnalog();
@@ -319,7 +319,7 @@ void set_stop_condition() {
   }
 }
 
-int stop_time = 0;
+int stop_time = 500;
 void set_stop_time() {
   while (true) {
     message = "Stop After\n";
@@ -332,7 +332,9 @@ void set_stop_time() {
     }
     // increase
     if (digitalRead(b1) == LOW) {
-      stop_time += 100;
+      if (stop_time < 1500) {
+        stop_time += 100;
+      }
       delay(100);
     }
     v_print(message + stop_time + " ms");
@@ -369,13 +371,11 @@ void set_stop_condition_threshold() {
 }
 
 bool stop_flag = false;
-bool check_stop_condition() {
-  bool stop_condition_met = true;
-  if (stop_condition == "Black") {
+bool check_stop_trigger() {
+  if (stop_condition == "White") {
     for (int i = 0; i < 8; ++i) {
       if (sensor_values[i] > min_threshold) {
-        stop_condition_met = false;
-        break;
+        return false;
       }
     }
   }
@@ -383,12 +383,11 @@ bool check_stop_condition() {
   else {
     for (int i = 0; i < 8; ++i) {
       if (sensor_values[i] < max_threshold) {
-        stop_condition_met = false;
-        break;
+        return false;
       }
     }
   }
-  return stop_condition_met;
+  return true;
 }
 
 
@@ -456,15 +455,31 @@ void pid(){
 void race() {
   for (int i = 3; i > 0; --i) {
     v_print(String(i));
-    delay(1000);
+    delay(500);
   }
   v_print("");
+
   set_direction(1);
+  unsigned long stop_trigger_time = 0;
+  stop_flag = false;
   while (!stop_flag) {
     read_sensor();
     pid();
     drive(left_pwm,right_pwm);
-    if (digitalRead(b1)==LOW){
+
+    // stop condition check
+    if (check_stop_trigger()){
+      if(stop_trigger_time ==0){
+        stop_trigger_time = millis();
+      }
+      else if(millis()-stop_trigger_time> stop_time){
+        stop_flag = true;
+      }
+    }
+    else{
+      stop_trigger_time = 0;
+    }
+    if (digitalRead(b2)==LOW){
       stop_flag= true;
     }
   }
