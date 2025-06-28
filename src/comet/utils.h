@@ -12,6 +12,7 @@ void toggle_line();
 void menu_handle();
 void option_handle();
 void motor_pin_setup();
+void set_max_speed();
 void test_motor();
 void v_print(String message, int font_size = 2);
 void test_display();

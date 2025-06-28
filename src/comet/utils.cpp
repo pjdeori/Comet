@@ -7,7 +7,7 @@ String line_type = "Black";
 String message;
 
 // Menu setup
-const String menu_options[] = { "Calibrate", "Read", "Line", "Stop On", "Stop After", "Test Motor" };
+const String menu_options[] = { "Calibrate", "Read", "Speed", "Line", "Stop On", "Stop After", "Test Motor" };
 int menu_option_len = sizeof(menu_options) / sizeof(menu_options[0]);
 int menu_counter = 0;
 
@@ -46,6 +46,8 @@ void option_handle() {
     set_stop_condition();
   } else if (menu_options[menu_counter] == "Stop After") {
     set_stop_time();
+  } else if (menu_options[menu_counter] == "Speed") {
+    set_max_speed();
   }
 }
 
@@ -88,7 +90,59 @@ void motor_pin_setup() {
   digitalWrite(bin2_r, LOW);
 }
 
+int max_speed = 0;
+void set_max_speed() {
+  message = "Speed:\n";
 
+  // decrement
+  while (true) {
+    unsigned long long_press_start_time = millis();
+    if (digitalRead(b0) == LOW) {
+      if (max_speed > 0) {
+        max_speed -= 1;
+      }
+      while (digitalRead(b0) != HIGH) {  //do until release
+        if (millis() - long_press_start_time > 250) {
+          if (max_speed > 0) {
+            max_speed -= 1;
+          }
+          v_print(message + max_speed);
+          delay(5);
+        }
+      }
+    }
+
+    long_press_start_time = millis();
+    if (digitalRead(b1) == LOW) {
+      if (max_speed < 255) {
+        max_speed += 1;
+      }
+      while (digitalRead(b1) != HIGH) {  //do until release
+        if (millis() - long_press_start_time > 250) {
+          if (max_speed < 255) {
+            max_speed += 1;
+          }
+          v_print(message + max_speed);
+          delay(5);
+        }
+      }
+    }
+
+    // show type
+    v_print(message + max_speed);
+
+    // check if button pressed to go back
+    unsigned long startTime = millis();
+    while (digitalRead(b2) == LOW) {
+      if (millis() - startTime >= 500) {
+        v_print("release to go back", 1);
+        if (digitalRead(b2) == HIGH) {
+          return;
+        }
+      }
+    }
+  }
+}
 void test_motor() {
   // === LEFT TB6612FNG TEST ===
   v_print("Testing LEFT TB6612FNG...", 1);
@@ -99,7 +153,7 @@ void test_motor() {
   digitalWrite(bin1_l, HIGH);
   digitalWrite(bin2_l, LOW);
 
-  for (int speed = 0; speed <= 255; speed += 5) {
+  for (int speed = 0; speed <= max_speed; speed += 5) {
     analogWrite(pwma_l, speed);
     analogWrite(pwmb_l, speed);
     delay(20);
@@ -116,7 +170,7 @@ void test_motor() {
   digitalWrite(bin1_l, LOW);
   digitalWrite(bin2_l, HIGH);
 
-  for (int speed = 0; speed <= 255; speed += 5) {
+  for (int speed = 0; speed <= max_speed; speed += 5) {
     analogWrite(pwma_l, speed);
     analogWrite(pwmb_l, speed);
     delay(20);
@@ -135,7 +189,7 @@ void test_motor() {
   digitalWrite(bin1_r, HIGH);
   digitalWrite(bin2_r, LOW);
 
-  for (int speed = 0; speed <= 255; speed += 5) {
+  for (int speed = 0; speed <= max_speed; speed += 5) {
     analogWrite(pwma_r, speed);
     analogWrite(pwmb_r, speed);
     delay(20);
@@ -152,7 +206,7 @@ void test_motor() {
   digitalWrite(bin1_r, LOW);
   digitalWrite(bin2_r, HIGH);
 
-  for (int speed = 0; speed <= 255; speed += 5) {
+  for (int speed = 0; speed <= max_speed; speed += 5) {
     analogWrite(pwma_r, speed);
     analogWrite(pwmb_r, speed);
     delay(20);
@@ -220,15 +274,14 @@ void calibrate() {
 
 void toggle_line() {
   message = "Line:\n";
-  
+
   // if button pressed
-  while(true){
-    if (digitalRead(b0) == LOW || digitalRead(b1) == LOW ) {
+  while (true) {
+    if (digitalRead(b0) == LOW || digitalRead(b1) == LOW) {
       // toggle type
       if (line_type == "Black") {
         line_type = "White";
-      }
-      else {
+      } else {
         line_type = "Black";
       }
       delay(100);
@@ -254,13 +307,12 @@ String stop_condition = "Black";
 void set_stop_condition() {
   message = "Condition:\n";
 
-  while (true){
-    if (digitalRead(b0) == LOW || digitalRead(b1) == LOW ) {
+  while (true) {
+    if (digitalRead(b0) == LOW || digitalRead(b1) == LOW) {
       // toggle condition
       if (stop_condition == "Black") {
         stop_condition = "White";
-      }
-      else {
+      } else {
         stop_condition = "Black";
       }
       delay(200);
