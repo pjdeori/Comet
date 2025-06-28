@@ -7,7 +7,7 @@ String line_type = "Black";
 String message;
 
 // Menu setup
-const String menu_options[] = { "Calibrate", "Read", "Speed", "Line", "Stop On", "Stop After", "Test Motor" };
+const String menu_options[] = { "Start", "Calibrate", "Read", "Speed", "Line", "Stop On", "Stop After", "Test Motor" };
 int menu_option_len = sizeof(menu_options) / sizeof(menu_options[0]);
 int menu_counter = 0;
 
@@ -48,6 +48,8 @@ void option_handle() {
     set_stop_time();
   } else if (menu_options[menu_counter] == "Speed") {
     set_max_speed();
+  } else if (menu_options[menu_counter] == "Start") {
+    race();
   }
 }
 
@@ -90,7 +92,8 @@ void motor_pin_setup() {
   digitalWrite(bin2_r, LOW);
 }
 
-int max_speed = 0;
+int max_speed = 255;
+
 void set_max_speed() {
   message = "Speed:\n";
 
@@ -143,80 +146,54 @@ void set_max_speed() {
     }
   }
 }
-void test_motor() {
-  // === LEFT TB6612FNG TEST ===
-  v_print("Testing LEFT TB6612FNG...", 1);
 
-  // Forward
-  digitalWrite(ain1_l, HIGH);
-  digitalWrite(ain2_l, LOW);
-  digitalWrite(bin1_l, HIGH);
-  digitalWrite(bin2_l, LOW);
-
-  for (int speed = 0; speed <= max_speed; speed += 5) {
-    analogWrite(pwma_l, speed);
-    analogWrite(pwmb_l, speed);
-    delay(20);
+void set_direction(int direction){
+  if (direction==1){
+    // Forward
+    digitalWrite(ain1_l, HIGH);
+    digitalWrite(ain2_l, LOW);
+    digitalWrite(bin1_l, HIGH);
+    digitalWrite(bin2_l, LOW);
   }
-
-  delay(500);
-  analogWrite(pwma_l, 0);
-  analogWrite(pwmb_l, 0);
-  delay(300);
-
-  // Reverse
+  else if (direction==-1){
+    // Reverse
   digitalWrite(ain1_l, LOW);
   digitalWrite(ain2_l, HIGH);
   digitalWrite(bin1_l, LOW);
   digitalWrite(bin2_l, HIGH);
-
-  for (int speed = 0; speed <= max_speed; speed += 5) {
-    analogWrite(pwma_l, speed);
-    analogWrite(pwmb_l, speed);
-    delay(20);
   }
+  else {
+    // Neutral
+    digitalWrite(ain1_l, LOW);
+    digitalWrite(ain2_l, LOW);
+    digitalWrite(bin1_l, LOW);
+    digitalWrite(bin2_l, LOW);
+  }
+}
 
-  delay(500);
-  analogWrite(pwma_l, 0);
-  analogWrite(pwmb_l, 0);
+void drive(int left_pwm, int right_pwm){
+  analogWrite(pwma_l, left_pwm);
+  analogWrite(pwmb_l, right_pwm);
 
-  // === RIGHT TB6612FNG TEST ===
-  v_print("Testing RIGHT TB6612FNG...", 1);
+}
+void test_motor() {
+  v_print("Testing Motor", 1);
 
   // Forward
-  digitalWrite(ain1_r, HIGH);
-  digitalWrite(ain2_r, LOW);
-  digitalWrite(bin1_r, HIGH);
-  digitalWrite(bin2_r, LOW);
-
-  for (int speed = 0; speed <= max_speed; speed += 5) {
-    analogWrite(pwma_r, speed);
-    analogWrite(pwmb_r, speed);
+  set_direction(1);
+  for (int speed = 0; speed <= max_speed; speed += 1) {
+    drive(speed, speed);
     delay(20);
   }
 
-  delay(500);
-  analogWrite(pwma_r, 0);
-  analogWrite(pwmb_r, 0);
-  delay(300);
+  set_direction(-1);
 
-  // Reverse
-  digitalWrite(ain1_r, LOW);
-  digitalWrite(ain2_r, HIGH);
-  digitalWrite(bin1_r, LOW);
-  digitalWrite(bin2_r, HIGH);
-
-  for (int speed = 0; speed <= max_speed; speed += 5) {
-    analogWrite(pwma_r, speed);
-    analogWrite(pwmb_r, speed);
+  for (int speed = 0; speed <= max_speed; speed += 1) {
+    drive(speed, speed);
     delay(20);
   }
 
-  delay(500);
-  analogWrite(pwma_r, 0);
-  analogWrite(pwmb_r, 0);
-
-  v_print("Motor test complete.", 1);
+  set_direction(0);
 }
 
 // Sensor setup
@@ -224,10 +201,13 @@ QTRSensors qtr;
 const uint8_t sensor_pins[] = { A15, A13, A11, A9, A7, A5, A3, A1 };
 unsigned int sensor_values[8];
 uint16_t position;
+int min_threshold;
+int max_threshold;
 
 void setup_qtr() {
   qtr.setTypeAnalog();
   qtr.setSensorPins(sensor_pins, 8);
+  qtr.calibrate();
 }
 
 void calibrate() {
@@ -238,7 +218,7 @@ void calibrate() {
   while (!white_done) {
     if (digitalRead(b1) == LOW) {
       v_print("Calibrating", 1);
-      for (int i = 0; i < 100; ++i) {
+      for (int i = 0; i < 25; ++i) {
         qtr.calibrate();
       }
       white_done = true;
@@ -249,26 +229,31 @@ void calibrate() {
   while (!black_done) {
     if (digitalRead(b1) == LOW) {
       v_print("Calibrating", 1);
-      for (int i = 0; i < 100; ++i) {
+      for (int i = 0; i < 25; ++i) {
         qtr.calibrate();
       }
       black_done = true;
     }
   }
 
-  message = "Minimum\n";
-  for (uint8_t i = 0; i < 8; ++i) {
-    message = message + " " + String(qtr.calibrationOn.minimum[i]);
-  }
+  set_stop_condition_threshold();
 
-  v_print(message, 1);
+  // message = "Minimum\n";
+  // for (uint8_t i = 0; i < 8; ++i) {
+  //   message = message + " " + String(qtr.calibrationOn.minimum[i]);
+  // }
+  // v_print(message, 1);
+  // delay(1500);
+  v_print("Min Thres:\n" + String(min_threshold), 1);
   delay(1500);
 
-  message = "Maximum\n";
-  for (uint8_t i = 0; i < 8; ++i) {
-    message = message + " " + String(qtr.calibrationOn.maximum[i]);
-  }
-  v_print(message, 1);
+  // message = "Maximum\n";
+  // for (uint8_t i = 0; i < 8; ++i) {
+  //   message = message + " " + String(qtr.calibrationOn.maximum[i]);
+  // }
+  // v_print(message, 1);
+  // delay(1500);
+  v_print("Max Thres:\n" + String(max_threshold), 1);
   delay(1500);
 }
 
@@ -364,8 +349,7 @@ void set_stop_time() {
   }
 }
 
-int min_threshold;
-int max_threshold;
+
 void set_stop_condition_threshold() {
   // get highest min threshold
   min_threshold = qtr.calibrationOn.minimum[0];
@@ -374,24 +358,19 @@ void set_stop_condition_threshold() {
       min_threshold = qtr.calibrationOn.minimum[i];
     }
   }
-  v_print("Minimum:\n" + min_threshold);
-  delay(1500);
 
   // get lowest max threshold
   max_threshold = qtr.calibrationOn.maximum[0];
   for (uint8_t i = 0; i < 8; ++i) {
     if (max_threshold > qtr.calibrationOn.maximum[i]) {
-      min_threshold = qtr.calibrationOn.maximum[i];
+      max_threshold = qtr.calibrationOn.maximum[i];
     }
   }
-  v_print("Maximum:\n" + max_threshold);
-  delay(1500);
 }
 
 bool stop_flag = false;
 bool check_stop_condition() {
   bool stop_condition_met = true;
-
   if (stop_condition == "Black") {
     for (int i = 0; i < 8; ++i) {
       if (sensor_values[i] > min_threshold) {
@@ -450,6 +429,46 @@ void show_sensor_value() {
       }
     }
   }
+}
+float Kp = 0.05;
+float Ki = 0;
+float Kd = 0.5;
+
+int error = 0;
+int last_error = 0;
+int integral = 0;
+int min_speed = 50;
+
+int left_pwm;
+int right_pwm;
+
+void pid(){
+  // left is 0 right is 7000
+  error = 3500 - position;   
+  integral += error;
+  int derivative = error - last_error;
+  last_error = error;  
+  int correction = Kp * error + Ki * integral + Kd * derivative;
+  left_pwm  = constrain(min_speed + correction, 0, max_speed);
+  right_pwm = constrain(min_speed - correction, 0, max_speed);
+}
+
+void race() {
+  for (int i = 3; i > 0; --i) {
+    v_print(String(i));
+    delay(1000);
+  }
+  v_print("");
+  set_direction(1);
+  while (!stop_flag) {
+    read_sensor();
+    pid();
+    drive(left_pwm,right_pwm);
+    if (digitalRead(b1)==LOW){
+      stop_flag= true;
+    }
+  }
+  set_direction(0);
 }
 
 // Button setup
@@ -566,8 +585,7 @@ void testfillroundrect(void) {
   display.clearDisplay();
   for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
     // The INVERSE color is used so round-rects alternate white/black
-    display.fillRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i,
-                          display.height() / 4, SSD1306_INVERSE);
+    display.fillRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i, display.height() / 4, SSD1306_INVERSE);
     display.display();
     delay(1);
   }
