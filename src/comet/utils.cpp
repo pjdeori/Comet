@@ -7,18 +7,14 @@ String line_type = "Black";
 String message;
 
 // Menu setup
-const String menu_options[] = { "Calibrate", "Read", "Line", "Test Display", "Test Button", "Test Motor" };
+const String menu_options[] = { "Calibrate", "Read", "Line", "Stop On", "Stop After", "Test Motor" };
 int menu_option_len = sizeof(menu_options) / sizeof(menu_options[0]);
 int menu_counter = 0;
 
 void menu_handle() {
   // print current selection
 
-  if (menu_options[menu_counter] == "Line") {
-    v_print(menu_options[menu_counter] + ":\n" + line_type, 2);
-  } else {
-    v_print(menu_options[menu_counter], 2);
-  }
+  v_print(menu_options[menu_counter], 2);
 
   // if option selected
   if (digitalRead(b2) == LOW) {
@@ -41,11 +37,15 @@ void option_handle() {
   } else if (menu_options[menu_counter] == "Calibrate") {
     calibrate();
   } else if (menu_options[menu_counter] == "Read") {
-    read();
+    show_sensor_value();
   } else if (menu_options[menu_counter] == "Line") {
     toggle_line();
   } else if (menu_options[menu_counter] == "Test Motor") {
     test_motor();
+  } else if (menu_options[menu_counter] == "Stop On") {
+    set_stop_condition();
+  } else if (menu_options[menu_counter] == "Stop After") {
+    set_stop_time();
   }
 }
 
@@ -168,7 +168,8 @@ void test_motor() {
 // Sensor setup
 QTRSensors qtr;
 const uint8_t sensor_pins[] = { A15, A13, A11, A9, A7, A5, A3, A1 };
-unsigned int sensorValues[8];
+unsigned int sensor_values[8];
+uint16_t position;
 
 void setup_qtr() {
   qtr.setTypeAnalog();
@@ -176,30 +177,29 @@ void setup_qtr() {
 }
 
 void calibrate() {
-  message = "";
-  while (digitalRead(b2) != LOW) {
-    for (uint8_t i = 0; i < 8; ++i) {
-      message = message + " " + String(qtr.calibrationOn.minimum[i]);
+  v_print("Place on Black\nPress b1 to calibrate", 1);
+  bool white_done = false;
+  bool black_done = false;
+
+  while (!white_done) {
+    if (digitalRead(b1) == LOW) {
+      v_print("Calibrating", 1);
+      for (int i = 0; i < 100; ++i) {
+        qtr.calibrate();
+      }
+      white_done = true;
     }
-    v_print("Place on black.\n" + message, 1);
   }
 
-  v_print("Calibrating", 1);
-  for (int i = 0; i < 100 ; ++i) {
-    qtr.calibrate();
-  }
-
-  message = "";
-  while (digitalRead(b2) != LOW) {
-    for (uint8_t i = 0; i < 8; ++i) {
-      message = message + " " + String(qtr.calibrationOn.maximum[i]);
+  v_print("Place on White\nPress b1 to calibrate", 1);
+  while (!black_done) {
+    if (digitalRead(b1) == LOW) {
+      v_print("Calibrating", 1);
+      for (int i = 0; i < 100; ++i) {
+        qtr.calibrate();
+      }
+      black_done = true;
     }
-    v_print("Place on white.\n" + message, 1);
-  }
-
-  v_print("Calibrating", 1);
-  for (int i = 0; i < 100 ; ++i) {
-    qtr.calibrate();
   }
 
   message = "Minimum\n";
@@ -218,31 +218,26 @@ void calibrate() {
   delay(1500);
 }
 
-void read() {
-  while (1) {
-    uint16_t position;
-    if (line_type[0] == "B") {
-      // read sensor values and obtain a measure of the line position
-      position = qtr.readLineBlack(sensorValues);  // from 0 to 5000
+void toggle_line() {
+  message = "Line:\n";
+  
+  // if button pressed
+  while(true){
+    if (digitalRead(b0) == LOW || digitalRead(b1) == LOW ) {
+      // toggle type
+      if (line_type == "Black") {
+        line_type = "White";
+      }
+      else {
+        line_type = "Black";
+      }
+      delay(100);
     }
 
-    else {
-      // read sensor values and obtain a measure of the line position
-      position = qtr.readLineWhite(sensorValues);  // from 0 to 5000
-    }
+    // show type
+    v_print(message + line_type);
 
-    // print the sensor values as numbers from 0 to 1000
-    message = "";
-    for (uint8_t i = 0; i < 8; i++) {
-      // where 0 means maximum reflectance and 1000 means minimum reflectance,
-      message = message + " " + String(sensorValues[i]);
-    }
-    // followed by the line position
-    message = message + "\n" + position;
-
-    v_print(message, 1);
-
-    // back traverse check
+    // check if button pressed to go back
     unsigned long startTime = millis();
     while (digitalRead(b2) == LOW) {
       if (millis() - startTime >= 500) {
@@ -255,11 +250,153 @@ void read() {
   }
 }
 
-void toggle_line() {
-  if (line_type == "Black") {
-    line_type = "White";
-  } else {
-    line_type = "Black";
+String stop_condition = "Black";
+void set_stop_condition() {
+  message = "Condition:\n";
+
+  while (true){
+    if (digitalRead(b0) == LOW || digitalRead(b1) == LOW ) {
+      // toggle condition
+      if (stop_condition == "Black") {
+        stop_condition = "White";
+      }
+      else {
+        stop_condition = "Black";
+      }
+      delay(200);
+    }
+
+    // show type
+    v_print(message + stop_condition);
+
+    // check if button pressed to go back
+    unsigned long startTime = millis();
+    while (digitalRead(b2) == LOW) {
+      if (millis() - startTime >= 500) {
+        v_print("release to go back", 1);
+        if (digitalRead(b2) == HIGH) {
+          return;
+        }
+      }
+    }
+  }
+}
+
+int stop_time = 0;
+void set_stop_time() {
+  while (true) {
+    message = "Stop After\n";
+    // decrease
+    if (digitalRead(b0) == LOW) {
+      if (stop_time > 0) {
+        stop_time -= 100;
+      }
+      delay(100);
+    }
+    // increase
+    if (digitalRead(b1) == LOW) {
+      stop_time += 100;
+      delay(100);
+    }
+    v_print(message + stop_time + " ms");
+    // check if button pressed to go back
+    unsigned long startTime = millis();
+    while (digitalRead(b2) == LOW) {
+      if (millis() - startTime >= 500) {
+        v_print("release to go back", 1);
+        if (digitalRead(b2) == HIGH) {
+          return;
+        }
+      }
+    }
+  }
+}
+
+int min_threshold;
+int max_threshold;
+void set_stop_condition_threshold() {
+  // get highest min threshold
+  min_threshold = qtr.calibrationOn.minimum[0];
+  for (uint8_t i = 0; i < 8; ++i) {
+    if (min_threshold < qtr.calibrationOn.minimum[i]) {
+      min_threshold = qtr.calibrationOn.minimum[i];
+    }
+  }
+  v_print("Minimum:\n" + min_threshold);
+  delay(1500);
+
+  // get lowest max threshold
+  max_threshold = qtr.calibrationOn.maximum[0];
+  for (uint8_t i = 0; i < 8; ++i) {
+    if (max_threshold > qtr.calibrationOn.maximum[i]) {
+      min_threshold = qtr.calibrationOn.maximum[i];
+    }
+  }
+  v_print("Maximum:\n" + max_threshold);
+  delay(1500);
+}
+
+bool stop_flag = false;
+bool check_stop_condition() {
+  bool stop_condition_met = true;
+
+  if (stop_condition == "Black") {
+    for (int i = 0; i < 8; ++i) {
+      if (sensor_values[i] > min_threshold) {
+        stop_condition_met = false;
+        break;
+      }
+    }
+  }
+
+  else {
+    for (int i = 0; i < 8; ++i) {
+      if (sensor_values[i] < max_threshold) {
+        stop_condition_met = false;
+        break;
+      }
+    }
+  }
+  return stop_condition_met;
+}
+
+
+
+void read_sensor() {
+  if (line_type[0] == "B") {
+    // read sensor values and obtain a measure of the line position
+    position = qtr.readLineBlack(sensor_values);
+  }
+
+  else {
+    // read sensor values and obtain a measure of the line position
+    position = qtr.readLineWhite(sensor_values);
+  }
+}
+
+void show_sensor_value() {
+  while (1) {
+    read_sensor();
+
+    message = "";
+    for (uint8_t i = 0; i < 8; i++) {
+      message = message + " " + String(sensor_values[i]);
+    }
+
+    message = message + "\n" + position;
+
+    v_print(message, 1);
+
+    // check if button pressed to go back
+    unsigned long startTime = millis();
+    while (digitalRead(b2) == LOW) {
+      if (millis() - startTime >= 500) {
+        v_print("release to go back", 1);
+        if (digitalRead(b2) == HIGH) {
+          return;
+        }
+      }
+    }
   }
 }
 
