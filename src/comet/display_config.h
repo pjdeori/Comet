@@ -1,8 +1,7 @@
 #pragma once
-
-#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Wire.h>
 
 // Display settings
 #define screen_width 128
@@ -14,6 +13,7 @@ extern Adafruit_SSD1306 display;
 
 void setup_display();
 void v_print(String message, int font_size = 2);
+
 void test_display();
 void testdrawrect();
 void testfillrect();
