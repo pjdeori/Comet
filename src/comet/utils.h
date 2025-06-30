@@ -3,7 +3,15 @@
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
 
-// Display settings
+// menu
+void menu_handle();
+void option_handle();
+
+// button
+void setup_buttons();
+void test_buttons(); 
+
+// Display
 #define screen_width 128
 #define screen_height 32
 #define oled_reset -1

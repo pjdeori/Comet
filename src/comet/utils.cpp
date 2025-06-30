@@ -1,4 +1,32 @@
-#include "display_config.h"
+#include "utils.h"
+#include "pin_config.h"
+// menu
+
+// button
+void setup_buttons(){
+  pinMode(b0, INPUT_PULLUP);
+  pinMode(b1, INPUT_PULLUP);
+  pinMode(b2, INPUT_PULLUP);
+}
+
+void test_buttons() {
+  while (1) {
+    if (digitalRead(b0) == LOW) v_print("b0 is pressed");
+    if (digitalRead(b1) == LOW) v_print("b1 is pressed");
+    if (digitalRead(b2) == LOW) {
+      v_print("b2 is pressed");
+      unsigned long startTime = millis();
+      while (digitalRead(b2) == LOW) {
+        if (millis() - startTime >= 500) {
+          v_print("release to go back",1);
+          if (digitalRead(b2) == HIGH) {
+            return;
+          }
+        }
+      }
+    }
+  }
+}
 
 // Display setup
 Adafruit_SSD1306 display(screen_width, screen_height, &Wire, oled_reset);
