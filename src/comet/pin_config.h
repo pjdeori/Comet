@@ -1,17 +1,16 @@
 // Button pins
-#define b0 PB4 // select
-#define b1 PB5 // down or -
-#define b2 PB6 // up or +
+#define SELECT PB5 // select
+#define MINUS PB8 // down or -
+#define PLUS PB9 // up or +
 
-// // Left TB6612FNG
-// // left motor
-// #define pwma_l 13
-// #define ain2_l 11
-// #define ain1_l 9
-// // right motor
-// #define bin2_l 7
-// #define bin1_l 5
-// #define pwmb_l 3
+// TB6612FNG
+#define PWM_A PB13
+#define AIN_2 PB14
+#define AIN_1 PB15
+#define STBY PA8
+#define BIN_1 PA9 
+#define BIN_2 PA10
+#define PWM_B PA11
 
 // // Sonar
 // #define echo 24
