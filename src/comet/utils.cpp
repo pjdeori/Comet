@@ -8,9 +8,7 @@ int menu_option_len = sizeof(menu_options) / sizeof(menu_options[0]);
 int menu_counter = 0;
 
 void menu_handle() {
-  // print current selection
-
-  v_print(menu_options[menu_counter], 2);
+  print_display(menu_options[menu_counter], 2);
 
   // if option selected
   if (digitalRead(PLUS) == LOW) {
@@ -67,13 +65,13 @@ void setup_qtr() {
 }
 
 void calibrate() {
-  v_print("Place on Black\nPress MINUS to calibrate", 1);
+  print_display("Place on Black\nPress MINUS to calibrate", 1);
   bool white_done = false;
   bool black_done = false;
 
   while (!white_done) {
     if (digitalRead(MINUS) == LOW) {
-      v_print("Calibrating", 1);
+      print_display("Calibrating", 1);
       for (int i = 0; i < 25; ++i) {
         qtr.calibrate();
       }
@@ -81,10 +79,10 @@ void calibrate() {
     }
   }
 
-  v_print("Place on White\nPress MINUS to calibrate", 1);
+  print_display("Place on White\nPress MINUS to calibrate", 1);
   while (!black_done) {
     if (digitalRead(MINUS) == LOW) {
-      v_print("Calibrating", 1);
+      print_display("Calibrating", 1);
       for (int i = 0; i < 25; ++i) {
         qtr.calibrate();
       }
@@ -98,18 +96,18 @@ void calibrate() {
   // for (uint8_t i = 0; i < 8; ++i) {
   //   message = message + " " + String(qtr.calibrationOn.minimum[i]);
   // }
-  // v_print(message, 1);
+  // print_display(message, 1);
   // delay(1500);
-  v_print("Min Thres:\n" + String(min_threshold), 1);
+  print_display("Min Thres:\n" + String(min_threshold), 1);
   delay(1500);
 
   // message = "Maximum\n";
   // for (uint8_t i = 0; i < 8; ++i) {
   //   message = message + " " + String(qtr.calibrationOn.maximum[i]);
   // }
-  // v_print(message, 1);
+  // print_display(message, 1);
   // delay(1500);
-  v_print("Max Thres:\n" + String(max_threshold), 1);
+  print_display("Max Thres:\n" + String(max_threshold), 1);
   delay(1500);
 }
 
@@ -129,13 +127,13 @@ void toggle_line() {
     }
 
     // show type
-    v_print(message + line_type);
+    print_display(message + line_type);
 
     // check if button pressed to go back
     unsigned long startTime = millis();
     while (digitalRead(PLUS) == LOW) {
       if (millis() - startTime >= 500) {
-        v_print("release to go back", 1);
+        print_display("release to go back", 1);
         if (digitalRead(PLUS) == HIGH) {
           return;
         }
@@ -160,13 +158,13 @@ void set_stop_condition() {
     }
 
     // show type
-    v_print(message + stop_condition);
+    print_display(message + stop_condition);
 
     // check if button pressed to go back
     unsigned long startTime = millis();
     while (digitalRead(PLUS) == LOW) {
       if (millis() - startTime >= 500) {
-        v_print("release to go back", 1);
+        print_display("release to go back", 1);
         if (digitalRead(PLUS) == HIGH) {
           return;
         }
@@ -193,12 +191,12 @@ void set_stop_time() {
       }
       delay(100);
     }
-    v_print(message + stop_time + " ms");
+    print_display(message + stop_time + " ms");
     // check if button pressed to go back
     unsigned long startTime = millis();
     while (digitalRead(PLUS) == LOW) {
       if (millis() - startTime >= 500) {
-        v_print("release to go back", 1);
+        print_display("release to go back", 1);
         if (digitalRead(PLUS) == HIGH) {
           return;
         }
@@ -271,13 +269,13 @@ void show_sensor_value() {
 
     message = message + "\n" + position;
 
-    v_print(message, 1);
+    print_display(message, 1);
 
     // check if button pressed to go back
     unsigned long startTime = millis();
     while (digitalRead(PLUS) == LOW) {
       if (millis() - startTime >= 500) {
-        v_print("release to go back", 1);
+        print_display("release to go back", 1);
         if (digitalRead(PLUS) == HIGH) {
           return;
         }
@@ -311,10 +309,10 @@ void pid() {
 
 void race() {
   for (int i = 3; i > 0; --i) {
-    v_print(String(i));
+    print_display(String(i));
     delay(500);
   }
-  v_print("");
+  print_display("");
 
   set_direction(1);
   unsigned long stop_trigger_time = 0;
@@ -342,7 +340,7 @@ void race() {
 }
 
 // motor
-void motor_pin_setup() {
+void setup_motor() {
   // Left motor
   pinMode(PWM_A, OUTPUT);
   pinMode(AIN_1, OUTPUT);
@@ -381,7 +379,7 @@ void set_max_speed() {
           if (max_speed > 0) {
             max_speed -= 1;
           }
-          v_print(message + max_speed);
+          print_display(message + max_speed);
           delay(5);
         }
       }
@@ -425,7 +423,7 @@ void drive(int left_pwm, int right_pwm) {
 
 // Motor test
 void test_motor() {
-  v_print("Testing Motor", 1);
+  print_display("Testing Motor", 1);
 
   // Forward test
   set_direction(1);
@@ -454,14 +452,14 @@ void setup_buttons() {
 
 void test_buttons() {
   while (1) {
-    if (digitalRead(SELECT) == LOW) v_print("Select");
-    if (digitalRead(MINUS) == LOW) v_print("Minus");
+    if (digitalRead(SELECT) == LOW) print_display("Select");
+    if (digitalRead(MINUS) == LOW) print_display("Minus");
     if (digitalRead(PLUS) == LOW) {
-      v_print("Plus");
+      print_display("Plus");
       unsigned long startTime = millis();
       while (digitalRead(PLUS) == LOW) {
         if (millis() - startTime >= 500) {
-          v_print("Release to go back", 1);
+          print_display("Release to go back", 1);
           if (digitalRead(PLUS) == HIGH) {
             return;
           }
@@ -472,123 +470,3 @@ void test_buttons() {
 }
 
 // display
-Adafruit_SSD1306 display(screen_width, screen_height, &Wire, oled_reset);
-
-void setup_display() {
-  if (!display.begin(SSD1306_SWITCHCAPVCC, screen_address)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    while (true)
-      ;  // Infinite loop to halt
-  }
-
-  display.setTextColor(SSD1306_WHITE);
-  display.clearDisplay();
-  display.display();
-}
-
-void v_print(String message, int font_size) {
-  display.clearDisplay();
-  display.setTextSize(font_size);
-  display.setCursor(0, 0);
-  display.println(message);
-  display.display();
-}
-
-void testdrawrect() {
-  display.clearDisplay();
-  for (int16_t i = 0; i < display.height() / 2; i += 2) {
-    display.drawRect(i, i, display.width() - 2 * i, display.height() - 2 * i, SSD1306_WHITE);
-    display.display();  // Update screen with each newly-drawn rectangle
-    delay(1);
-  }
-}
-
-void testfillrect() {
-  display.clearDisplay();
-  for (int16_t i = 0; i < display.height() / 2; i += 3) {
-    // The INVERSE color is used so rectangles alternate white/black
-    display.fillRect(i, i, display.width() - i * 2, display.height() - i * 2, SSD1306_INVERSE);
-    display.display();  // Update screen with each newly-drawn rectangle
-    delay(1);
-  }
-}
-
-void testdrawcircle() {
-  display.clearDisplay();
-  for (int16_t i = 0; i < max(display.width(), display.height()) / 2; i += 2) {
-    display.drawCircle(display.width() / 2, display.height() / 2, i, SSD1306_WHITE);
-    display.display();
-    delay(1);
-  }
-}
-
-void testfillcircle() {
-  display.clearDisplay();
-  for (int16_t i = max(display.width(), display.height()) / 2; i > 0; i -= 3) {
-    // The INVERSE color is used so circles alternate white/black
-    display.fillCircle(display.width() / 2, display.height() / 2, i, SSD1306_INVERSE);
-    display.display();  // Update screen with each newly-drawn circle
-    delay(1);
-  }
-}
-
-void testdrawroundrect() {
-  display.clearDisplay();
-  for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
-    display.drawRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i, display.height() / 4, SSD1306_WHITE);
-    display.display();
-    delay(1);
-  }
-}
-
-void testfillroundrect() {
-  display.clearDisplay();
-  for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
-    // The INVERSE color is used so round-rects alternate white/black
-    display.fillRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i, display.height() / 4, SSD1306_INVERSE);
-    display.display();
-    delay(1);
-  }
-}
-
-void testdrawchar() {
-  display.clearDisplay();
-  display.setTextSize(1);               // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);  // Draw white text
-  display.setCursor(0, 0);              // Start at top-left corner
-  display.cp437(true);                  // Use full 256 char 'Code Page 437' font
-
-  // Not all the characters will fit on the display. This is normal.
-  // Library will draw what it can and the rest will be clipped.
-  for (int16_t i = 0; i < 256; i++) {
-    if (i == '\n') display.write(' ');
-    else display.write(i);
-  }
-  display.display();
-}
-
-void testdrawstyles() {
-  display.clearDisplay();
-  display.setTextSize(1);               // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);  // Draw white text
-  display.setCursor(0, 0);              // Start at top-left corner
-  display.println(F("Hello, world!"));
-  display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);  // Draw 'inverse' text
-  display.println(3.141592);
-  display.setTextSize(2);  // Draw 2X-scale text
-  display.setTextColor(SSD1306_WHITE);
-  display.print(F("0x"));
-  display.println(0xDEADBEEF, HEX);
-  display.display();
-}
-
-void test_display() {
-  testdrawrect();       // Draw rectangles (outlines)
-  testfillrect();       // Draw rectangles (filled)
-  testdrawcircle();     // Draw circles (outlines)
-  testfillcircle();     // Draw circles (filled)
-  testdrawroundrect();  // Draw rounded rectangles (outlines)
-  testfillroundrect();  // Draw rounded rectangles (filled)
-  testdrawchar();       // Draw characters of the default font
-  testdrawstyles();     // Draw 'stylized' characters
-}

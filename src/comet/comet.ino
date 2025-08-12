@@ -1,13 +1,13 @@
 #include "utils.h"
 
-
 void setup() {
   setup_display();
   setup_buttons();
   setup_qtr();
-  motor_pin_setup();
+  setup_motor();
 }
 
 void loop() {
-  menu_handle();
+  // menu_handle();
+  test_display();
 }

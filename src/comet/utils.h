@@ -19,7 +19,7 @@ void show_sensor_value();
 void toggle_line();
 
 // motor
-void motor_pin_setup();
+void setup_motor();
 void set_max_speed();
 void pid();
 void race(); 
@@ -39,7 +39,7 @@ void test_buttons();
 
 void setup_display();
 
-void v_print(String message, int font_size = 2);
+void print_display(String message, int font_size = 2);
 
 void test_display();
 void testdrawrect();
