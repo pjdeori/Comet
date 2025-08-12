@@ -8,5 +8,5 @@ void setup() {
 }
 
 void loop() {
-  // menu_handle();
+  menu_handle();
 }

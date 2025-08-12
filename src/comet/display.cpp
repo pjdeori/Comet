@@ -4,7 +4,6 @@ Adafruit_SSD1306 display(screen_width, screen_height, &Wire, oled_reset);
 
 void setup_display() {
   if (!display.begin(SSD1306_SWITCHCAPVCC, screen_address)) {
-    Serial.println(F("SSD1306 allocation failed"));
     while (true)
       ;  // Infinite loop to halt
   }
