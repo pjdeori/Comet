@@ -5,6 +5,9 @@
 const String menu_options[] = {
   "Start",
   "Calibrate",
+  "Kp",
+  "Kd",
+  "Ki",
   "Line",
   "Read",
   "Stop On",
@@ -28,6 +31,9 @@ void menu_handle() {
     }
     if (menu_options[menu_counter] == "Start") race();
     if (menu_options[menu_counter] == "Calibrate") calibrate();
+    if (menu_options[menu_counter] == "Kp") set_kp();
+    if (menu_options[menu_counter] == "Kd") set_kd();
+    if (menu_options[menu_counter] == "Ki") set_ki();
     if (menu_options[menu_counter] == "Line") toggle_line();
     if (menu_options[menu_counter] == "Read") show_sensor_value();
     if (menu_options[menu_counter] == "Stop On") set_stop_condition();

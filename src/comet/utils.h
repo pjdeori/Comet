@@ -31,6 +31,11 @@ extern String message;
 void menu_handle();
 void option_handle();
 
+// race
+void set_kp();
+void set_kd();
+void set_ki();
+
 // sensor
 void setup_qtr();
 void calibrate();
