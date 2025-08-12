@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "pin_config.h"
 
 Adafruit_SSD1306 display(screen_width, screen_height, &Wire, oled_reset);
 

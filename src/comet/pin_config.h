@@ -1,7 +1,7 @@
 // Button pins
 #define SELECT PB5 // select
-#define MINUS PB8 // down or -
-#define PLUS PB9 // up or +
+#define PREV PB8 // down or -
+#define NEXT PB9 // up or +
 
 // TB6612FNG
 #define PWM_A PB13

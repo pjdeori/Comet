@@ -11,13 +11,13 @@ void menu_handle() {
   print_display(menu_options[menu_counter], 2);
 
   // if option selected
-  if (digitalRead(PLUS) == LOW) {
+  if (digitalRead(NEXT) == LOW) {
     option_handle();
     delay(200);
   } else if (digitalRead(SELECT) == LOW) {
     if (menu_counter > 0) menu_counter -= 1;
     delay(200);
-  } else if (digitalRead(MINUS) == LOW) {
+  } else if (digitalRead(PREV) == LOW) {
     if (menu_counter < menu_option_len - 1) menu_counter += 1;
     delay(200);
   }
@@ -65,12 +65,12 @@ void setup_qtr() {
 }
 
 void calibrate() {
-  print_display("Place on Black\nPress MINUS to calibrate", 1);
+  print_display("Place on Black\nPress PREV to calibrate", 1);
   bool white_done = false;
   bool black_done = false;
 
   while (!white_done) {
-    if (digitalRead(MINUS) == LOW) {
+    if (digitalRead(PREV) == LOW) {
       print_display("Calibrating", 1);
       for (int i = 0; i < 25; ++i) {
         qtr.calibrate();
@@ -79,9 +79,9 @@ void calibrate() {
     }
   }
 
-  print_display("Place on White\nPress MINUS to calibrate", 1);
+  print_display("Place on White\nPress PREV to calibrate", 1);
   while (!black_done) {
-    if (digitalRead(MINUS) == LOW) {
+    if (digitalRead(PREV) == LOW) {
       print_display("Calibrating", 1);
       for (int i = 0; i < 25; ++i) {
         qtr.calibrate();
@@ -116,7 +116,7 @@ void toggle_line() {
 
   // if button pressed
   while (true) {
-    if (digitalRead(SELECT) == LOW || digitalRead(MINUS) == LOW) {
+    if (digitalRead(SELECT) == LOW || digitalRead(PREV) == LOW) {
       // toggle type
       if (line_type == "Black") {
         line_type = "White";
@@ -131,10 +131,10 @@ void toggle_line() {
 
     // check if button pressed to go back
     unsigned long startTime = millis();
-    while (digitalRead(PLUS) == LOW) {
+    while (digitalRead(NEXT) == LOW) {
       if (millis() - startTime >= 500) {
         print_display("release to go back", 1);
-        if (digitalRead(PLUS) == HIGH) {
+        if (digitalRead(NEXT) == HIGH) {
           return;
         }
       }
@@ -147,7 +147,7 @@ void set_stop_condition() {
   message = "Condition:\n";
 
   while (true) {
-    if (digitalRead(SELECT) == LOW || digitalRead(MINUS) == LOW) {
+    if (digitalRead(SELECT) == LOW || digitalRead(PREV) == LOW) {
       // toggle condition
       if (stop_condition == "Black") {
         stop_condition = "White";
@@ -162,10 +162,10 @@ void set_stop_condition() {
 
     // check if button pressed to go back
     unsigned long startTime = millis();
-    while (digitalRead(PLUS) == LOW) {
+    while (digitalRead(NEXT) == LOW) {
       if (millis() - startTime >= 500) {
         print_display("release to go back", 1);
-        if (digitalRead(PLUS) == HIGH) {
+        if (digitalRead(NEXT) == HIGH) {
           return;
         }
       }
@@ -185,7 +185,7 @@ void set_stop_time() {
       delay(100);
     }
     // increase
-    if (digitalRead(MINUS) == LOW) {
+    if (digitalRead(PREV) == LOW) {
       if (stop_time < 1500) {
         stop_time += 100;
       }
@@ -194,10 +194,10 @@ void set_stop_time() {
     print_display(message + stop_time + " ms");
     // check if button pressed to go back
     unsigned long startTime = millis();
-    while (digitalRead(PLUS) == LOW) {
+    while (digitalRead(NEXT) == LOW) {
       if (millis() - startTime >= 500) {
         print_display("release to go back", 1);
-        if (digitalRead(PLUS) == HIGH) {
+        if (digitalRead(NEXT) == HIGH) {
           return;
         }
       }
@@ -273,10 +273,10 @@ void show_sensor_value() {
 
     // check if button pressed to go back
     unsigned long startTime = millis();
-    while (digitalRead(PLUS) == LOW) {
+    while (digitalRead(NEXT) == LOW) {
       if (millis() - startTime >= 500) {
         print_display("release to go back", 1);
-        if (digitalRead(PLUS) == HIGH) {
+        if (digitalRead(NEXT) == HIGH) {
           return;
         }
       }
@@ -332,7 +332,7 @@ void race() {
     } else {
       stop_trigger_time = 0;
     }
-    if (digitalRead(PLUS) == LOW) {
+    if (digitalRead(NEXT) == LOW) {
       stop_flag = true;
     }
   }
@@ -444,29 +444,4 @@ void test_motor() {
 }
 
 // button
-void setup_buttons() {
-  pinMode(SELECT, INPUT_PULLUP);
-  pinMode(MINUS, INPUT_PULLUP);
-  pinMode(PLUS, INPUT_PULLUP);
-}
 
-void test_buttons() {
-  while (1) {
-    if (digitalRead(SELECT) == LOW) print_display("Select");
-    if (digitalRead(MINUS) == LOW) print_display("Minus");
-    if (digitalRead(PLUS) == LOW) {
-      print_display("Plus");
-      unsigned long startTime = millis();
-      while (digitalRead(PLUS) == LOW) {
-        if (millis() - startTime >= 500) {
-          print_display("Release to go back", 1);
-          if (digitalRead(PLUS) == HIGH) {
-            return;
-          }
-        }
-      }
-    }
-  }
-}
-
-// display
